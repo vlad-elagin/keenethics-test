@@ -1,0 +1,44 @@
+@font-face
+    font-family Proxima Nova
+    src url("/fonts/proximanova-bold-webfont.woff2")
+
+header
+	background-color #213145
+	height 60px
+	line-height 60px
+	padding 0 20px
+	margin 0 !important
+
+	h1
+		color white
+		font-family 'Proxima Nova'
+		text-transform uppercase
+		margin 0
+		padding 0
+		line-height inherit
+
+		span
+			color #DE4F4F
+
+	a
+		color white
+		text-transform uppercase
+		text-decoration none
+		margin-right 20px
+		
+		&:hover
+		&:visited
+		&:focus
+			color darken(white, 20%)
+			
+		&:not(:last-of-type)
+			position relative
+			
+			&:after
+				content ''
+				position absolute
+				right -10px
+				height 25px
+				width 1px
+				background-color #fff
+				top -5px
