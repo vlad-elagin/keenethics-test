@@ -8,9 +8,8 @@ const Header = ({ username, history }) => (
   <header className="row">
 
     <h1 className="col-xs-6 col-sm-4">keen<span>.</span>ethics test</h1>
-
     {
-      username ?
+      username !== null ?
         <div className="pull-right">
           <Link to="/location">Location Chat</Link>
           <Link to="/profile">{username} Profile</Link>
@@ -34,24 +33,20 @@ const Header = ({ username, history }) => (
 );
 
 Header.propTypes = {
-  username: PropTypes.string,
+  username: PropTypes.string.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
 
-Header.defaultProps = {
-  username: null,
-};
-
 export default createContainer(() => {
   const user = Meteor.user();
-  if (user) {
+  if (user && user.emails) {
     return {
       username: user.username || user.emails[0].address,
     };
   }
   return {
-    username: null,
+    username: '',
   };
 }, withRouter(Header));

@@ -4,6 +4,8 @@ import { Meteor } from 'meteor/meteor';
 
 import Header from '../header/Header';
 import LoginPage from '../login/LoginPage';
+import ProfilePage from '../profile/ProfilePage';
+import LocationPage from '../location/LocationPage';
 
 const App = () => (
   <BrowserRouter>
@@ -21,6 +23,8 @@ const App = () => (
           }}
         />
         <Route path="/login" component={LoginPage} />
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/location" component={LocationPage} />
       </div>
     </div>
   </BrowserRouter>

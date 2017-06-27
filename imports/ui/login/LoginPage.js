@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { FormGroup, ControlLabel, FormControl, Button, HelpBlock } from 'react-bootstrap';
-import { Accounts } from 'meteor/accounts-base';
 import { Meteor } from 'meteor/meteor';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -9,16 +8,14 @@ class LoginPage extends Component {
 
   constructor(props) {
     super(props);
-    this.validateState = this.validateState.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.onSignUp = this.onSignUp.bind(this);
-    this.errorHandler = this.errorHandler.bind(this);
+    this.afterSubmitHandler = this.afterSubmitHandler.bind(this);
     this.state = {
+      username: '',
       email: '',
-      emailState: null,
       password: '',
-      passwordState: null,
       error: null,
     };
   }
@@ -30,52 +27,34 @@ class LoginPage extends Component {
   }
 
   onInputChange(e) {
-    this.setState({ [e.target.type]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value });
   }
 
   onSubmit(e) {
-    e.preventDefault();
-    this.validateState(() => {
-      Meteor.loginWithPassword(
-        this.state.email,
-        this.state.password,
-        this.errorHandler,
-      );
-    });
+    if (e) e.preventDefault();
+    Meteor.loginWithPassword(
+      this.state.email,
+      this.state.password,
+      this.afterSubmitHandler,
+    );
   }
 
   onSignUp() {
-    this.validateState(() => {
-      Accounts.createUser({
-        username: '',
-        email: this.state.email,
-        password: this.state.password,
-      }, this.errorHandler);
-    });
+    Meteor.call('user.create',
+      this.state.username,
+      this.state.email,
+      this.state.password,
+    );
+
+    this.onSubmit();
   }
 
-  errorHandler(error) {
+  afterSubmitHandler(error) {
     if (error) {
       this.setState({ error: error.reason });
     } else {
       this.props.history.push('/profile');
     }
-  }
-
-  validateState(cb) {
-    const regexp = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    if (this.state.email.length > 3 && regexp.test(this.state.email)) {
-      this.setState({ emailState: 'success' });
-    } else {
-      this.setState({ emailState: 'error' });
-    }
-
-    if (this.state.password.length > 3) {
-      this.setState({ passwordState: 'success' });
-    } else {
-      this.setState({ passwordState: 'error' });
-    }
-    if (cb) cb();
   }
 
   render() {
@@ -85,13 +64,14 @@ class LoginPage extends Component {
         <div className="col-sx-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
           <h1>Welcome!</h1>
           <form onSubmit={this.onSubmit}>
+
             <FormGroup
               controlId="emailInput"
-              validationState={this.state.emailState}
             >
               <ControlLabel>Enter your email address</ControlLabel>
               <FormControl
                 type="email"
+                name="email"
                 value={this.state.email}
                 onChange={this.onInputChange}
               />
@@ -100,11 +80,11 @@ class LoginPage extends Component {
 
             <FormGroup
               controlId="passwordInput"
-              validationState={this.state.passwordState}
             >
               <ControlLabel>Enter your password:</ControlLabel>
               <FormControl
                 type="password"
+                name="password"
                 value={this.state.password}
                 onChange={this.onInputChange}
               />
@@ -117,7 +97,21 @@ class LoginPage extends Component {
 
             <Button type="submit" bsStyle="primary">Log In</Button>
             or
+            <FormGroup
+              controlId="usernameInput"
+            >
+              <ControlLabel>Add your name</ControlLabel>
+              <FormControl
+                type="text"
+                name="username"
+                value={this.state.username}
+                onChange={this.onInputChange}
+              />
+              <FormControl.Feedback />
+            </FormGroup>
+            and
             <Button onClick={this.onSignUp}>Sign Up</Button>
+            with same credentials.
 
           </form>
         </div>
