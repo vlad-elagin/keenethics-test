@@ -8,11 +8,17 @@ export const errors = {
   password: {
     tooShort: 'Password is too short',
   },
+  location: {
+    notValid: 'This isn\'t valid location',
+  },
 };
 
 
 const validate = (type, value) => {
-  if (typeof value === 'string' && value.length === 0) {
+  if (typeof value === 'undefined') {
+    return 'No value specified';
+  }
+  if (type !== 'location' && typeof value === 'string' && value.length === 0) {
     return `${type.charAt(0).toUpperCase() + type.slice(1)} cannot be blank`;
   }
   switch (type) {
@@ -28,6 +34,10 @@ const validate = (type, value) => {
     }
     case 'password': {
       if (value.length < 6) return errors.password.tooShort;
+      return false;
+    }
+    case 'location': {
+      if (value !== 'loc1' && value !== 'loc2') return errors.location.notValid;
       return false;
     }
     default: {

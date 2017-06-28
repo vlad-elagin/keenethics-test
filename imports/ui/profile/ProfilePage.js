@@ -1,23 +1,34 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
-import { Form, Col, FormGroup, FormControl, Button } from 'react-bootstrap';
+import { Form, Col, FormGroup, FormControl, Button, HelpBlock } from 'react-bootstrap';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
+
+import validate from '../../helpers/validator';
 
 class ProfilePage extends Component {
   constructor(props) {
     super(props);
     this.clearForm = this.clearForm.bind(this);
     this.onFormFieldUpdate = this.onFormFieldUpdate.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
+    this.onProfileSubmit = this.onProfileSubmit.bind(this);
     this.onPasswordSubmit = this.onPasswordSubmit.bind(this);
     this.onEmailSubmit = this.onEmailSubmit.bind(this);
+    this.validate = this.validate.bind(this);
     this.state = {
-      email: '',
-      name: '',
-      password: '',
-      oldPassword: '',
+      username: '',
+      usernameError: null,
       location: '',
+      locationError: null,
+
+      password: '',
+      passwordError: null,
+      oldPassword: '',
+      oldPasswordError: null,
+
+      email: '',
+      emailError: null,
     };
   }
 
@@ -31,30 +42,60 @@ class ProfilePage extends Component {
     this.setState({ [e.target.name]: e.target.value });
   }
 
-  onSubmit(e) {
+  onProfileSubmit(e) {
     e.preventDefault();
-    const currentUser = Meteor.user();
-    Meteor.users.update(Meteor.userId(), { $set: {
-      username: this.state.name || currentUser.username,
-      profile: {
-        location: this.state.location || currentUser.profile.location,
-      },
-    } });
-    this.clearForm('profile');
+    this.validate('profile', () => {
+      const userId = Meteor.userId();
+      if (!this.state.usernameError && !this.state.locationError) {
+        Meteor.call('user.update',
+          userId,
+          this.state.username,
+          this.state.location,
+          (err) => {
+            if (!err) this.clearForm('profile');
+          },
+        );
+      }
+    });
   }
 
   onPasswordSubmit(e) {
     e.preventDefault();
-    Accounts.changePassword(this.state.oldPassword, this.state.password);
-    this.clearForm('password');
+    this.validate('password', () => {
+      if (!this.state.passwordError && !this.state.oldPasswordError) {
+        if (this.state.password === this.state.oldPassword) {
+          this.setState({ passwordError: 'Passwords are the same' });
+          return;
+        }
+        Accounts.changePassword(this.state.oldPassword, this.state.password, (err) => {
+          if (err) {
+            if (err.error === 403) this.setState({ oldPasswordError: err.reason });
+          } else {
+            this.clearForm('password');
+          }
+        });
+      }
+    });
   }
 
   onEmailSubmit(e) {
     e.preventDefault();
-    if (this.state.email.length === 0) return;
-    Meteor.users.update(Meteor.userId(), { $set: {
-      emails: [{ address: this.state.email }],
-    } });
+    this.validate('email', () => {
+      if (this.state.emailError) return;
+      const userId = Meteor.userId();
+
+      Meteor.call('user.changeEmail',
+        userId,
+        this.state.email,
+        (err) => {
+          if (err) {
+            this.setState({ emailError: err.reason });
+          } else {
+            this.clearForm('email');
+          }
+        },
+      );
+    });
   }
 
   clearForm(form) {
@@ -62,7 +103,7 @@ class ProfilePage extends Component {
 
       case 'profile':
         this.setState({
-          name: '',
+          username: '',
           location: '',
         });
         break;
@@ -85,36 +126,70 @@ class ProfilePage extends Component {
     }
   }
 
+  validate(form, cb) {
+    switch (form) {
+
+      case 'profile':
+        this.setState({
+          usernameError: validate('username', this.state.username),
+          locationError: validate('location', this.state.location),
+        }, cb);
+        break;
+
+      case 'password':
+        this.setState({
+          passwordError: validate('password', this.state.password),
+          oldPasswordError: validate('password', this.state.oldPassword),
+        }, cb);
+        break;
+
+      case 'email':
+        this.setState({
+          emailError: validate('email', this.state.email),
+        }, cb);
+        break;
+
+      default:
+        break;
+    }
+  }
+
   render() {
     return (
       <div className="panel panel-default row profile-page">
 
         <div className="col-xs-12 col-sm-6 col-sm-offset-2">
-          <Form horizontal onSubmit={this.onSubmit}>
+          <Form horizontal onSubmit={this.onProfileSubmit}>
 
-            <FormGroup controlId="name">
+            <FormGroup
+              controlId="name"
+              validationState={this.state.usernameError ? 'error' : null}
+            >
               <Col componentClass="ControlLabel" xs={4} sm={4}>
                 Name:
               </Col>
               <Col xs={8} sm={8}>
                 <FormControl
                   type="text"
-                  name="name"
+                  name="username"
                   placeholder="Your new name"
                   onChange={this.onFormFieldUpdate}
-                  value={this.state.name}
+                  value={this.state.username}
                 />
+                {this.state.usernameError && <HelpBlock>{this.state.usernameError}</HelpBlock>}
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="location">
+            <FormGroup
+              controlId="location"
+              validationState={this.state.locationError ? 'error' : null}
+            >
               <Col componentClass="ControlLabel" xs={4} sm={4}>
                 Location:
               </Col>
               <Col xs={8} sm={8}>
                 <select
                   name="location"
-                  id="location"
                   className="form-control"
                   onChange={this.onFormFieldUpdate}
                   value={this.state.location}
@@ -123,6 +198,7 @@ class ProfilePage extends Component {
                   <option value="loc1">Location 1</option>
                   <option value="loc2">Location 2</option>
                 </select>
+                {this.state.locationError && <HelpBlock>{this.state.locationError}</HelpBlock>}
               </Col>
             </FormGroup>
 
@@ -133,7 +209,10 @@ class ProfilePage extends Component {
           </Form>
 
           <Form horizontal onSubmit={this.onPasswordSubmit}>
-            <FormGroup controlId="oldpassword">
+            <FormGroup
+              controlId="oldpassword"
+              validationState={this.state.oldPasswordError ? 'error' : null}
+            >
               <Col componentClass="ControlLabel" xs={4} sm={4}>
                 Current Password:
               </Col>
@@ -145,10 +224,16 @@ class ProfilePage extends Component {
                   onChange={this.onFormFieldUpdate}
                   value={this.state.oldPassword}
                 />
+                {this.state.oldPasswordError &&
+                  <HelpBlock>{this.state.oldPasswordError}</HelpBlock>
+                }
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="password">
+            <FormGroup
+              controlId="password"
+              validationState={this.state.passwordError ? 'error' : null}
+            >
               <Col componentClass="ControlLabel" xs={4} sm={4}>
                 New Password:
               </Col>
@@ -160,6 +245,7 @@ class ProfilePage extends Component {
                   onChange={this.onFormFieldUpdate}
                   value={this.state.password}
                 />
+                {this.state.passwordError && <HelpBlock>{this.state.passwordError}</HelpBlock>}
               </Col>
             </FormGroup>
 
@@ -169,9 +255,12 @@ class ProfilePage extends Component {
 
           </Form>
 
-          <Form horizontal onSubmit={this.onEmailSubmit}>
+          <Form horizontal onSubmit={this.onEmailSubmit} noValidate>
 
-            <FormGroup controlId="email">
+            <FormGroup
+              controlId="email"
+              validationState={this.state.emailError ? 'error' : null}
+            >
               <Col componentClass="ControlLabel" xs={4} sm={4}>
                 Email:
               </Col>
@@ -183,6 +272,7 @@ class ProfilePage extends Component {
                   onChange={this.onFormFieldUpdate}
                   value={this.state.email}
                 />
+                {this.state.emailError && <HelpBlock>{this.state.emailError}</HelpBlock>}
               </Col>
             </FormGroup>
 
@@ -203,4 +293,4 @@ ProfilePage.propTypes = {
   }).isRequired,
 };
 
-export default ProfilePage;
+export default withRouter(ProfilePage);
