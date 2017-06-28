@@ -100,7 +100,7 @@ class ProfilePage extends Component {
                 <FormControl
                   type="text"
                   name="name"
-                  placeholder="Your name"
+                  placeholder="Your new name"
                   onChange={this.onFormFieldUpdate}
                   value={this.state.name}
                 />

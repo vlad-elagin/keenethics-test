@@ -9,7 +9,7 @@ const Header = ({ username, history }) => (
 
     <h1 className="col-xs-6 col-sm-4">keen<span>.</span>ethics test</h1>
     {
-      username !== null ?
+      username.length > 0 ?
         <div className="pull-right">
           <Link to="/location">Location Chat</Link>
           <Link to="/profile">{username} Profile</Link>

@@ -6,7 +6,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 
 import Message from './Message';
-import Messages from '../../api/Messages';
+import Messages from '../../api/messages';
 
 class Location extends Component {
 
