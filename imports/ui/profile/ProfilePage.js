@@ -12,14 +12,16 @@ class ProfilePage extends Component {
     super(props);
     this.clearForm = this.clearForm.bind(this);
     this.onFormFieldUpdate = this.onFormFieldUpdate.bind(this);
+    this.onLocationSubmit = this.onLocationSubmit.bind(this);
     this.onProfileSubmit = this.onProfileSubmit.bind(this);
     this.onPasswordSubmit = this.onPasswordSubmit.bind(this);
     this.onEmailSubmit = this.onEmailSubmit.bind(this);
     this.validate = this.validate.bind(this);
+    const user = Meteor.user();
     this.state = {
       username: '',
       usernameError: null,
-      location: '',
+      location: user ? user.profile.location : '',
       locationError: null,
 
       password: '',
@@ -42,15 +44,27 @@ class ProfilePage extends Component {
     this.setState({ [e.target.name]: e.target.value });
   }
 
+  onLocationSubmit(e) {
+    e.preventDefault();
+    this.validate('location', () => {
+      const userId = Meteor.userId();
+      if (!this.state.locationError) {
+        Meteor.call('user.changeLocation',
+          userId,
+          this.state.location,
+        );
+      }
+    });
+  }
+
   onProfileSubmit(e) {
     e.preventDefault();
     this.validate('profile', () => {
       const userId = Meteor.userId();
-      if (!this.state.usernameError && !this.state.locationError) {
-        Meteor.call('user.update',
+      if (!this.state.usernameError) {
+        Meteor.call('user.changeUsername',
           userId,
           this.state.username,
-          this.state.location,
           (err) => {
             if (!err) this.clearForm('profile');
           },
@@ -129,10 +143,15 @@ class ProfilePage extends Component {
   validate(form, cb) {
     switch (form) {
 
+      case 'location':
+        this.setState({
+          locationError: validate('location', this.state.location),
+        }, cb);
+        break;
+
       case 'profile':
         this.setState({
           usernameError: validate('username', this.state.username),
-          locationError: validate('location', this.state.location),
         }, cb);
         break;
 
@@ -159,26 +178,7 @@ class ProfilePage extends Component {
       <div className="panel panel-default row profile-page">
 
         <div className="col-xs-12 col-sm-6 col-sm-offset-3">
-          <Form horizontal onSubmit={this.onProfileSubmit}>
-
-            <FormGroup
-              controlId="name"
-              validationState={this.state.usernameError ? 'error' : null}
-            >
-              <Col componentClass="ControlLabel" xs={4} sm={4}>
-                Name:
-              </Col>
-              <Col xs={8} sm={8}>
-                <FormControl
-                  type="text"
-                  name="username"
-                  placeholder="Your new name"
-                  onChange={this.onFormFieldUpdate}
-                  value={this.state.username}
-                />
-                {this.state.usernameError && <HelpBlock>{this.state.usernameError}</HelpBlock>}
-              </Col>
-            </FormGroup>
+          <Form horizontal onSubmit={this.onLocationSubmit}>
 
             <FormGroup
               controlId="location"
@@ -203,7 +203,34 @@ class ProfilePage extends Component {
             </FormGroup>
 
             <div className="pull-right buttons">
-              <Button bsStyle="primary" type="submit">Save Changes</Button>
+              <Button bsStyle="primary" type="submit">Change location</Button>
+            </div>
+
+          </Form>
+
+          <Form horizontal onSubmit={this.onProfileSubmit}>
+
+            <FormGroup
+              controlId="name"
+              validationState={this.state.usernameError ? 'error' : null}
+            >
+              <Col componentClass="ControlLabel" xs={4} sm={4}>
+                Name:
+              </Col>
+              <Col xs={8} sm={8}>
+                <FormControl
+                  type="text"
+                  name="username"
+                  placeholder="Your new name"
+                  onChange={this.onFormFieldUpdate}
+                  value={this.state.username}
+                />
+                {this.state.usernameError && <HelpBlock>{this.state.usernameError}</HelpBlock>}
+              </Col>
+            </FormGroup>
+
+            <div className="pull-right buttons">
+              <Button bsStyle="primary" type="submit">Change username</Button>
             </div>
 
           </Form>

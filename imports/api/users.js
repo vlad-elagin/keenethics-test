@@ -19,15 +19,24 @@ if (Meteor.isServer) {
       });
     },
 
-    'user.update'(userId, username, location) {
+    'user.changeUsername'(userId, username) {
       check(userId, String);
       check(username, String);
-      check(location, String);
 
       const user = Meteor.users.findOne({ _id: userId });
       if (!user) return;
       Meteor.users.update(userId, { $set: {
         username: username || user.username,
+      } });
+    },
+
+    'user.changeLocation'(userId, location) {
+      check(userId, String);
+      check(location, String);
+
+      const user = Meteor.users.findOne({ _id: userId });
+      if (!user) return;
+      Meteor.users.update(userId, { $set: {
         profile: {
           location: location || user.profile.location,
         },
