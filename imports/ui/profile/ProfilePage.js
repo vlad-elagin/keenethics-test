@@ -158,7 +158,7 @@ class ProfilePage extends Component {
     return (
       <div className="panel panel-default row profile-page">
 
-        <div className="col-xs-12 col-sm-6 col-sm-offset-2">
+        <div className="col-xs-12 col-sm-6 col-sm-offset-3">
           <Form horizontal onSubmit={this.onProfileSubmit}>
 
             <FormGroup

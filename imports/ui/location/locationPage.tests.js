@@ -6,13 +6,13 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { BrowserRouter } from 'react-router-dom';
 
-import ProfilePage from './ProfilePage';
+import Location from './LocationPage';
 
 if (Meteor.isClient) {
-  describe('Profile Page', () => {
+  describe('Location Page', () => {
     it('should render', () => {
-      const item = mount(<BrowserRouter><ProfilePage /></BrowserRouter>);
-      assert(item.hasClass('profile-page'));
+      const item = mount(<BrowserRouter><Location /></BrowserRouter>);
+      assert(item.hasClass('location-page'));
     });
   });
 }

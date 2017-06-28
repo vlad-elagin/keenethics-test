@@ -23,7 +23,7 @@ Message.propTypes = {
   message: PropTypes.shape({
     author: PropTypes.string,
     authorName: PropTypes.string,
-    timestamp: PropTypes.number,
+    timestamp: PropTypes.instanceOf(Date),
     text: PropTypes.string,
   }).isRequired,
 };

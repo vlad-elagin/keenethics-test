@@ -6,13 +6,13 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { BrowserRouter } from 'react-router-dom';
 
-import ProfilePage from './ProfilePage';
+import Header from './Header';
 
 if (Meteor.isClient) {
-  describe('Profile Page', () => {
+  describe('Header', () => {
     it('should render', () => {
-      const item = mount(<BrowserRouter><ProfilePage /></BrowserRouter>);
-      assert(item.hasClass('profile-page'));
+      const item = mount(<BrowserRouter><Header /></BrowserRouter>);
+      assert.equal(item.find('h1').node.innerText, 'keen.ethics test');
     });
   });
 }

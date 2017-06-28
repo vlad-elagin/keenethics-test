@@ -40,5 +40,17 @@ if (Meteor.isClient) {
         assert.equal(errors.password.tooShort, validate('password', value));
       });
     });
+
+    describe('location validation', () => {
+      it('passes test', () => {
+        const value = 'loc1';
+        assert.equal(false, validate('location', value));
+      });
+
+      it('fails test', () => {
+        const value = 'loc4';
+        assert.equal('This isn\'t valid location', validate('location', value));
+      });
+    });
   });
 }

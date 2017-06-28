@@ -7,10 +7,10 @@ import PropTypes from 'prop-types';
 const Header = ({ username, history }) => (
   <header className="row">
 
-    <h1 className="col-xs-6 col-sm-4">keen<span>.</span>ethics test</h1>
+    <h1 className="col-xs-12 col-md-6">keen<span>.</span>ethics test</h1>
     {
-      username.length > 0 ?
-        <div className="pull-right">
+      username &&
+        <div className="col-xs-12 col-md-6 text-right">
           <Link to="/location">Location Chat</Link>
           <Link to="/profile">{username} Profile</Link>
           <a
@@ -23,30 +23,30 @@ const Header = ({ username, history }) => (
             }}
           >Logout</a>
         </div>
-      :
-        <div className="pull-right">
-          <Link to="/login" />
-        </div>
     }
 
   </header>
 );
 
 Header.propTypes = {
-  username: PropTypes.string.isRequired,
+  username: PropTypes.string,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
 
+Header.defaultProps = {
+  username: null,
+};
+
 export default createContainer(() => {
   const user = Meteor.user();
-  if (user && user.emails) {
+  if (user) {
     return {
-      username: user.username || user.emails[0].address,
+      username: user.username,
     };
   }
   return {
-    username: '',
+    username: null,
   };
 }, withRouter(Header));
