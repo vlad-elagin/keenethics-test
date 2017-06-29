@@ -17,11 +17,10 @@ class ProfilePage extends Component {
     this.onPasswordSubmit = this.onPasswordSubmit.bind(this);
     this.onEmailSubmit = this.onEmailSubmit.bind(this);
     this.validate = this.validate.bind(this);
-    const user = Meteor.user();
     this.state = {
       username: '',
       usernameError: null,
-      location: user ? user.profile.location : '',
+      location: '',
       locationError: null,
 
       password: '',

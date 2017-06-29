@@ -63,10 +63,18 @@ class Location extends Component {
     const messages = this.props.messages.map(message => (
       <Message message={message} key={message._id} />
     ));
+    const user = Meteor.user();
+    let location = null;
+    if (user) location = user.profile.location;
 
     return (
       <div className="panel panel-default location-page">
-
+        {
+          location &&
+          <div className="panel-heading">
+            <h4>This is {location}</h4>
+          </div>
+        }
         <div className="row">
           <div
             className="col-xs-12 col-sm-8 col-sm-offset-2 messages-wrapper"
@@ -75,7 +83,7 @@ class Location extends Component {
             {messages.length > 0 ?
               messages
               :
-              <h3>There are no messages for this location. Be first!</h3>
+              <h4>There are no messages for this location. Be first!</h4>
             }
           </div>
         </div>
@@ -119,6 +127,7 @@ Location.defaultProps = {
 
 export default createContainer(() => {
   Meteor.subscribe('messages');
+  Meteor.subscribe('users');
   const user = Meteor.user();
   if (!user) return [];
   return {
@@ -129,8 +138,8 @@ export default createContainer(() => {
         sort: { timestamp: 1 },
         limit: 30,
         transform: (message) => {
-          const author = Meteor.users.findOne(message.author);
-          let authorName;
+          const author = Meteor.users.findOne({ _id: message.author });
+          let authorName = '';
           if (author && author.emails) {
             authorName = author.username || author.emails[0].address;
           }

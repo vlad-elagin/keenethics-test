@@ -11,10 +11,10 @@ const Message = ({ message }) => (
       'col-sm-offset-4': message.author !== Meteor.userId(),
     })}
   >
-    <h4>
+    <h5>
       {message.authorName}
       <small className="pull-right">{message.timestamp.format('YYYY-MM-DD hh:mm:ss')}</small>
-    </h4>
+    </h5>
     <p className="well well-sm">{message.text}</p>
   </div>
 );

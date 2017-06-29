@@ -3,6 +3,8 @@ import { check } from 'meteor/check';
 import { Accounts } from 'meteor/accounts-base';
 
 if (Meteor.isServer) {
+  Meteor.publish('users', () => Meteor.users.find());
+
   Meteor.methods({
     'user.create'(username, email, password) {
       check(email, String);
